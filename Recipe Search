@@ -1,0 +1,106 @@
+import requests
+
+app_id = '1db3a04d'
+app_key = 'f6f1490d94e1f326991d34643455b96e'
+
+def recipe_search(url):
+    result = requests.get(url)
+    print(url)
+    data = result.json()
+    return data['hits']
+
+def run():
+    answer = input('Are you wishing to filter results beyond ingredient by dietary requirements, meal type and cuisine type? yes/no ')
+    if answer == 'no':
+        ingredient = input('Enter an ingredient: ')
+        url = 'https://api.edamam.com/search?q={}&app_id={}&app_key={}'.format(ingredient, app_id, app_key)
+        results = recipe_search(url)
+        for result in results:
+            recipe = result['recipe']
+        print(recipe['label'])
+        print(recipe['url'])
+        print()
+
+    else:
+        # getting the input
+        ingredient = input('Enter an ingredient: ')
+        health = input('Enter a dietary requirement from the list: gluten-free, pescatarian, vegetarian, vegan, peanut-free (or enter to skip) ')
+        mealType = input("Enter a meal type from the list: breakfast, lunch, dinner, snack (or enter to skip) ")
+        cuisineType = input(
+            "Enter a cuisine type from the list: American, Asian, British, French, Italian, Indian, Mediterranean, Mexican (or enter to skip) ")
+
+        # assigning default values
+        has_health = False
+        has_mealType = False
+        has_cuisineType = False
+        url = 'https://api.edamam.com/search?q={}&app_id={}&app_key={}'.format(ingredient, app_id, app_key)
+
+        # checking to see whether someone has answered
+        if health != "":
+            has_health = True
+        if mealType != "":
+            has_mealType = True
+        if cuisineType != "":
+            has_cuisineType = True
+
+        # deciding the url for possible outcomes
+        if has_health == True and has_mealType == True and has_cuisineType == True:
+            url = 'https://api.edamam.com/search?q={}&app_id={}&app_key={}&health={}&mealType={}&cuisineType={}'.format(
+                ingredient, app_id, app_key, health, mealType, cuisineType)
+
+        elif has_health == True and has_mealType == False and has_cuisineType == False:
+                url = 'https://api.edamam.com/search?q={}&app_id={}&app_key={}&health={}'.format(ingredient, app_id,
+                                                                                                 app_key, health)
+        elif has_health == True and has_mealType == True and has_cuisineType == False:
+                url = 'https://api.edamam.com/search?q={}&app_id={}&app_key={}&health={}&mealType={}'.format(ingredient, app_id,
+                                                                                                 app_key, health, mealType)
+        elif has_health == True and has_mealType == False and has_cuisineType == False:
+                url = 'https://api.edamam.com/search?q={}&app_id={}&app_key={}&health={}'.format(ingredient, app_id,
+                                                                                                 app_key, health)
+        elif has_health == False and has_mealType == True and has_cuisineType == False:
+                url = 'https://api.edamam.com/search?q={}&app_id={}&app_key={}&mealType={}'.format(ingredient, app_id,
+                                                                                                 app_key, mealType)
+        elif has_health == False and has_mealType == True and has_cuisineType == True:
+                url = 'https://api.edamam.com/search?q={}&app_id={}&app_key={}&mealType={}&cuisineType={}'.format(ingredient, app_id,
+                                                                                                 app_key, mealType, cuisineType)
+        elif has_health == False and has_mealType == False and has_cuisineType == True:
+                url = 'https://api.edamam.com/search?q={}&app_id={}&app_key={}&cuisineType={}'.format(ingredient, app_id,
+                                                                                                 app_key, cuisineType)
+        elif has_health == True and has_mealType == False and has_cuisineType == True:
+                url = 'https://api.edamam.com/search?q={}&app_id={}&app_key={}&health={}&cuisineType={}'.format(ingredient, app_id,
+                                                                                                 app_key, health, cuisineType)
+
+        results = recipe_search(url)
+
+    for result in results:
+        recipe = result['recipe']
+        print(recipe['label'])
+        print(recipe['url'])
+        print()
+
+    user_input = input('Would you like to save the results?: ').lower()
+    if user_input == "yes":
+        with open('recipe.txt', 'w') as file: #first parameter name of the file you want to open, "w" want to write file
+            #syntax for opening a file
+            for result in results: #for loop
+                recipe = result['recipe'] #key
+                label = recipe['label'] #value
+                url = recipe['uri'] #value
+
+                # print(label)
+                # print(url)
+
+                # method 1
+                file.write(label + '\n') # file.write = write a line to file
+                file.write(url + '\n')
+                file.write('\n')
+
+#txt file for readability
+
+user_input_two = "yes"
+
+while user_input_two ==  "yes":
+    run()
+    user_input_two = input('Would you like to search for something else?: ')
+
+#Keeps calling function
